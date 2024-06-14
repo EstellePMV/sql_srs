@@ -1,34 +1,58 @@
 import streamlit as st
 import pandas as pd
 import duckdb
+import io
+csv = '''
+beverage,price
+orange juice,2.5
+Expresso,2
+Tea,3
+'''
+beverages = pd.read_csv(io.StringIO(csv))
 
-data = {"a": [1, 2, 3], "b": [4, 5, 6]}
-df = pd.DataFrame(data)
+csv2 = '''
+foot_item,food_price
+cookie juice,2.5
+chocolatine,2
+muffin,3
+'''
 
-st.write("""
-# SQL SRS
-Spaced Repetition System SQL practice
-""")
+food_items = pd.read_csv(io.StringIO(csv2))
 
-option = st.selectbox(
-    "How would you like to review?",
-    ("Joins", "GrouppBy", "Windows Functions"),
-    index=None,
-    placeholder="Select a theme..."
-)
+answer = """
+SELECT * FROM beverages
+CROSS JOIN food_items
+"""
 
-st.write('You selected:', option)
+solution = duckdb.sql(answer).df()
+
+with st.sidebar:
+    option = st.selectbox(
+        "How would you like to review?",
+        ("Joins", "GrouppBy", "Windows Functions"),
+        index=None,
+        placeholder="Select a theme..."
+    )
+    st.write('You selected:', option)
 
 
-tab1, tab2 = st.tabs(["DuckDb", "Autre"])
+st.header("enter your code:")
+query = st.text_area(label="votre code SQL ici", key="user_input")
+if query:
+    result = duckdb.sql(query).df()
+    st.dataframe(result)
+
+
+tab1, tab2 = st.tabs(["Tables", "Solution"])
 
 with tab1:
-    st.dataframe(df)
-    sql_query = st.text_area(label="Requête SQL")
-    result = duckdb.query(sql_query).df()
+    st.write("table: beverages")
+    st.dataframe(beverages)
+    st.write("table: food_items")
+    st.dataframe(food_items)
+    st.write("expected")
+    st.dataframe(solution)
 
-
-    # df2 = pd.DataFrame()
-
-    st.dataframe(result)
+with tab2:
+    st.write(answer)
 
